@@ -2,3 +2,4 @@
 devices/
 
 */__pycache__
+.tmp/
