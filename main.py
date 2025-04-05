@@ -1,4 +1,4 @@
-from utils import cisco,huaweiOLT
+from utils import cisco,huaweiOLT, bdcom
 import os
 import json
 from colorama import Fore, Style
@@ -38,6 +38,32 @@ def main():
                 if not Device_status:
                     print(f"{Fore.RED}Device {device_data['hostname']} is unreachable.{Style.RESET_ALL}")
                     Offline_Devices.append(device_data["hostname"])
+                if device_data["vendor"].lower() == "bdcom":
+                    tn = bdcom.TelnetSession(
+                        device_data["hostname"],
+                        device_data["username"],
+                        device_data["password"]
+                    )
+                    if tn:
+                        print("-"*55)
+                        print(f"{Fore.YELLOW}Device: {device_data['name']}")
+                        print(f"IP: {device_data['hostname']}{Style.RESET_ALL}")
+                        print("-"*55)
+                        # Print table header
+                        print(f"{'PORT':<10} {'NAME':<25} {'OPTICAL POWER':<20}")
+                        print("-" * 55)
+                        for port in device_data["ports"]:
+                            optical_power = bdcom.checkOpticalPower(port, tn)
+                            portname = device_data["ports"][port]
+                            deviceName = device_data["name"]
+                            ip = device_data["hostname"]
+                            OpticalPower.append([{"name":deviceName, "IP": ip, "port": port,"Desc":portname, "OpticalRx":optical_power}])
+                            if optical_power:
+                                if "N/A" not in optical_power:
+                                    print(f"{Fore.GREEN}{port:<10} | {portname:<50} | {optical_power}{Style.RESET_ALL}")
+                                else:
+                                    print(f"{Fore.RED}{port:<10} | {portname:<50} | {optical_power}{Style.RESET_ALL}")
+                        print("-"*55)
                 if device_data["vendor"].lower() == "huaweiolt":
                     tn = huaweiOLT.TelnetSession(
                         device_data["hostname"],
@@ -82,6 +108,10 @@ def main():
                         print("-" * 55)
                         for port in device_data["ports"]:
                             optical_power = cisco.checkOpticalPower(port, ssh_client)
+                            portname = device_data["ports"][port]
+                            deviceName = device_data["name"]
+                            ip = device_data["hostname"]
+                            OpticalPower.append([{"name":deviceName, "IP": ip, "port": port,"Desc":portname, "OpticalRx":optical_power}])
                             if optical_power:
                                 # print(f"{Fore.GREEN}{port}:{device_data["ports"][port]}: {optical_power}{Style.RESET_ALL}")
                                 if "N/A" not in optical_power:
