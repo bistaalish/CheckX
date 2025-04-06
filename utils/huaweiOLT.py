@@ -48,7 +48,7 @@ def checkOpticalPower(interface,tn):
         rx_power = float(match.group(1))
         if rx_power <= -40:
             rx_power = "N/A"
-            return rx_power
+            return [rx_power]
         return [str(rx_power)]
     else:
         return None

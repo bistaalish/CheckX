@@ -61,8 +61,10 @@ def main():
                             if optical_power:
                                 if "N/A" not in optical_power:
                                     print(f"{Fore.GREEN}{port:<10} | {portname:<50} | {optical_power}{Style.RESET_ALL}")
+                                    
                                 else:
                                     print(f"{Fore.RED}{port:<10} | {portname:<50} | {optical_power}{Style.RESET_ALL}")
+                                    NoPowerPort.append([{"name":deviceName, "IP": ip, "port": port,"Desc":portname, "OpticalRx":optical_power}])
                         print("-"*55)
                 if device_data["vendor"].lower() == "huaweiolt":
                     tn = huaweiOLT.TelnetSession(
@@ -86,10 +88,11 @@ def main():
                             OpticalPower.append([{"name":deviceName, "IP": ip, "port": port,"Desc":portname, "OpticalRx":optical_power}])
                             if optical_power:
                                 if "N/A" not in optical_power:
+                                    print(f"{Fore.GREEN}{port:<10} | {portname:<50} | {optical_power}{Style.RESET_ALL}")
                                     
-                                    print(f"{Fore.GREEN}{port:<10} | {portname:<50} | {optical_power:<8}{Style.RESET_ALL}")
                                 else:
-                                    print(f"{Fore.RED}{port:<10} | {portname:<50} | {optical_power:<8}{Style.RESET_ALL}")
+                                    NoPowerPort.append([{"name":deviceName, "IP": ip, "port": port,"Desc":portname, "OpticalRx":optical_power}])
+                                    print(f"{Fore.RED}{port:<10} | {portname:<50} | {optical_power}{Style.RESET_ALL}")
                         print("-"*55)
                 if device_data["vendor"].lower() == "cisco":
                     ssh_client = cisco.establish_ssh_session(
@@ -104,7 +107,7 @@ def main():
                         print(f"IP: {device_data['hostname']}{Style.RESET_ALL}")
                         print("-"*55)
                         # Print table header
-                        print(f"{'PORT':<10} {'NAME':<25} {'OPTICAL POWER':<20}")
+                        print(f"{'PORT':<10} {'NAME':<25} {'OPTICAL POWER'}")
                         print("-" * 55)
                         for port in device_data["ports"]:
                             optical_power = cisco.checkOpticalPower(port, ssh_client)
@@ -113,11 +116,11 @@ def main():
                             ip = device_data["hostname"]
                             OpticalPower.append([{"name":deviceName, "IP": ip, "port": port,"Desc":portname, "OpticalRx":optical_power}])
                             if optical_power:
-                                # print(f"{Fore.GREEN}{port}:{device_data["ports"][port]}: {optical_power}{Style.RESET_ALL}")
                                 if "N/A" not in optical_power:
                                     print(f"{Fore.GREEN}{port:<10} | {device_data['ports'][port]} | {optical_power}{Style.RESET_ALL}")
                                 else:
                                     print(f"{Fore.RED}{port:<10} | {device_data['ports'][port]} | {optical_power}{Style.RESET_ALL}")
+                                    NoPowerPort.append([{"name":deviceName, "IP": ip, "port": port,"Desc":portname, "OpticalRx":optical_power}])
                         print("-"*55)
     if not Offline_Devices:
         print("The Offline list is empty.")
@@ -147,13 +150,31 @@ def main():
 
         # Create the CSV file with the current date and time as the filename
         current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-        optical_csv_file_path = os.path.join(optical_csv_folder, f"{current_time}.csv")
+        optical_csv_file_path = os.path.join(optical_csv_folder, f"{current_time}-opticalpower.csv")
 
         # Write the OpticalPower details to the CSV file
         with open(optical_csv_file_path, mode='w', newline='') as csv_file:
             csv_writer = csv.writer(csv_file)
             csv_writer.writerow(["Device Name", "IP", "Port", "Description", "Optical Rx"])  # Write the header
             for device_data in OpticalPower:
+                for data in device_data:
+                    csv_writer.writerow([data["name"], data["IP"], data["port"], data["Desc"], data["OpticalRx"]])
+
+        print(f"Optical power data has been saved to {optical_csv_file_path}")
+
+    if NoPowerPort:
+        # Ensure the 'csv/opticalpower' directory exists
+        optical_csv_folder = os.path.join(os.path.dirname(__file__), 'csv', 'opticalpower')
+        os.makedirs(optical_csv_folder, exist_ok=True)
+        # Create the CSV file with the current date and time as the filename
+        current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        optical_csv_file_path = os.path.join(optical_csv_folder, f"{current_time}-NoPowerPort.csv")
+
+        # Write the OpticalPower details to the CSV file
+        with open(optical_csv_file_path, mode='w', newline='') as csv_file:
+            csv_writer = csv.writer(csv_file)
+            csv_writer.writerow(["Device Name", "IP", "Port", "Description", "Optical Rx"])  # Write the header
+            for device_data in NoPowerPort:
                 for data in device_data:
                     csv_writer.writerow([data["name"], data["IP"], data["port"], data["Desc"], data["OpticalRx"]])
 

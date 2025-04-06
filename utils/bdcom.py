@@ -17,8 +17,7 @@ def TelnetSession(host,username,password):
 
         # Wait for prompt
         time.sleep(1)
-        prompt = tn.read_until(b">", timeout=5).decode("ascii")
-        print(prompt)
+        tn.read_until(b">", timeout=5).decode("ascii")
         # Enter enable mode
         tn.write(b"enable\n")
         if host == "100.126.255.142":
@@ -47,4 +46,4 @@ def checkOpticalPower(interface,tn):
         rx_power = float(match.group(1))
         return [str(rx_power)]
     else:
-        return "N/A"
+        return ["N/A"]

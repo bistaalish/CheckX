@@ -15,7 +15,7 @@ def establish_ssh_session(hostname, port, username, password):
     try:
         ssh_client = paramiko.SSHClient()
         ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh_client.connect(hostname=hostname, port=port, username=username, password=password,timeout=30)
+        ssh_client.connect(hostname=hostname, port=port, username=username, password=password,timeout=60)
         print(f"SSH connection established to {hostname}:{port}")
         return ssh_client
     except Exception as e:
