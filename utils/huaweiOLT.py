@@ -52,3 +52,26 @@ def checkOpticalPower(interface,tn):
         return [str(rx_power)]
     else:
         return None
+
+
+def checkOpticalState(interface,tn):
+    """
+    Check the optical state of the specified interface.
+    :param interface: The interface to check.
+    :return: The output of the command.
+    """
+    fs, p = interface.rsplit("/",1)
+    Interfacecommand = "interface " + fs + "\n"
+    OpticalStateCommand = "display port state " + p + "\n"
+    tn.write(Interfacecommand.encode('ascii') + b"\n")
+    tn.write(OpticalStateCommand.encode('ascii') + b"\n")
+    tn.write(b"quit\n")
+    time.sleep(1)
+    output = tn.read_until(b">>", timeout=5).decode('ascii').strip()
+    # Extract the line that contains "Ethernet port is"
+    for line in output.splitlines():
+        if "Ethernet port is" in line:
+            status = line.strip().split()[-1]  # get the last word (online/offline)
+            return status
+            break
+    return None

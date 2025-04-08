@@ -78,21 +78,21 @@ def main():
                         print(f"IP: {device_data['hostname']}{Style.RESET_ALL}")
                         print("-"*55)
                         # Print table header
-                        print(f"{'PORT':<10} {'NAME':<25} {'OPTICAL POWER':<20}")
+                        print(f"{'PORT':<10} {'NAME':<25} {'PORT_STATE':<10} {'OPTICAL POWER'}")
                         print("-" * 55)
                         for port in device_data["ports"]:
                             optical_power = huaweiOLT.checkOpticalPower(port, tn)
+                            port_status = huaweiOLT.checkOpticalState(port, tn)
                             portname = device_data["ports"][port]
                             deviceName = device_data["name"]
                             ip = device_data["hostname"]
-                            OpticalPower.append([{"name":deviceName, "IP": ip, "port": port,"Desc":portname, "OpticalRx":optical_power}])
+                            OpticalPower.append([{"name":deviceName, "IP": ip, "port": port,"Desc":portname, "OpticalRx":optical_power, "PortStatus" :port_status} ])
                             if optical_power:
                                 if "N/A" not in optical_power:
-                                    print(f"{Fore.GREEN}{port:<10} | {portname:<50} | {optical_power}{Style.RESET_ALL}")
-                                    
+                                    print(f"{Fore.GREEN}{port:<10} | {device_data['ports'][port]} | {port_status} | {optical_power}{Style.RESET_ALL}")
                                 else:
-                                    NoPowerPort.append([{"name":deviceName, "IP": ip, "port": port,"Desc":portname, "OpticalRx":optical_power}])
-                                    print(f"{Fore.RED}{port:<10} | {portname:<50} | {optical_power}{Style.RESET_ALL}")
+                                    print(f"{Fore.RED}{port:<10} | {device_data['ports'][port]} | {port_status} | {optical_power}{Style.RESET_ALL}")
+                                    NoPowerPort.append([{"name":deviceName, "IP": ip, "port": port,"Desc":portname, "OpticalRx":optical_power, "PortStatus" :port_status}])
                         print("-"*55)
                 if device_data["vendor"].lower() == "cisco":
                     ssh_client = cisco.establish_ssh_session(
@@ -107,7 +107,7 @@ def main():
                         print(f"IP: {device_data['hostname']}{Style.RESET_ALL}")
                         print("-"*55)
                         # Print table header
-                        print(f"{'PORT':<10} {'NAME':<25} {'PORT_STATE'} {'OPTICAL POWER'}")
+                        print(f"{'PORT':<10} {'NAME':<25} {'PORT_STATE':<10} {'OPTICAL POWER'}")
                         print("-" * 55)
                         for port in device_data["ports"]:
                             optical_power = cisco.checkOpticalPower(port, ssh_client)
@@ -116,7 +116,6 @@ def main():
                             deviceName = device_data["name"]
                             ip = device_data["hostname"]
                             OpticalPower.append([{"name":deviceName, "IP": ip, "port": port,"Desc":portname, "OpticalRx":optical_power, "PortStatus" :port_status} ])
-                            print(OpticalPower)
                             if optical_power:
                                 if "N/A" not in optical_power:
                                     print(f"{Fore.GREEN}{port:<10} | {device_data['ports'][port]} | {port_status} | {optical_power}{Style.RESET_ALL}")
