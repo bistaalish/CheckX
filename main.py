@@ -50,21 +50,21 @@ def main():
                         print(f"IP: {device_data['hostname']}{Style.RESET_ALL}")
                         print("-"*55)
                         # Print table header
-                        print(f"{'PORT':<10} {'NAME':<25} {'OPTICAL POWER':<20}")
+                        print(f"{'PORT':<10} {'NAME':<25} {'PORT_STATE':<10} {'OPTICAL POWER'}")
                         print("-" * 55)
                         for port in device_data["ports"]:
                             optical_power = bdcom.checkOpticalPower(port, tn)
+                            port_status = bdcom.checkPortStatus(port, tn)
                             portname = device_data["ports"][port]
                             deviceName = device_data["name"]
                             ip = device_data["hostname"]
-                            OpticalPower.append([{"name":deviceName, "IP": ip, "port": port,"Desc":portname, "OpticalRx":optical_power}])
+                            OpticalPower.append([{"name":deviceName, "IP": ip, "port": port,"Desc":portname, "OpticalRx":optical_power, "PortStatus" :port_status} ])
                             if optical_power:
                                 if "N/A" not in optical_power:
-                                    print(f"{Fore.GREEN}{port:<10} | {portname:<50} | {optical_power}{Style.RESET_ALL}")
-                                    
+                                    print(f"{Fore.GREEN}{port:<10} | {device_data['ports'][port]:<30} | {port_status} | {optical_power}{Style.RESET_ALL}")
                                 else:
-                                    print(f"{Fore.RED}{port:<10} | {portname:<50} | {optical_power}{Style.RESET_ALL}")
-                                    NoPowerPort.append([{"name":deviceName, "IP": ip, "port": port,"Desc":portname, "OpticalRx":optical_power}])
+                                    print(f"{Fore.RED}{port:<10} | {device_data['ports'][port]:<30} | {port_status} | {optical_power}{Style.RESET_ALL}")
+                                    NoPowerPort.append([{"name":deviceName, "IP": ip, "port": port,"Desc":portname, "OpticalRx":optical_power, "PortStatus" :port_status}])
                         print("-"*55)
                 if device_data["vendor"].lower() == "huaweiolt":
                     tn = huaweiOLT.TelnetSession(
@@ -107,20 +107,22 @@ def main():
                         print(f"IP: {device_data['hostname']}{Style.RESET_ALL}")
                         print("-"*55)
                         # Print table header
-                        print(f"{'PORT':<10} {'NAME':<25} {'OPTICAL POWER'}")
+                        print(f"{'PORT':<10} {'NAME':<25} {'PORT_STATE'} {'OPTICAL POWER'}")
                         print("-" * 55)
                         for port in device_data["ports"]:
                             optical_power = cisco.checkOpticalPower(port, ssh_client)
+                            port_status = cisco.checkPortStatus(port, ssh_client)
                             portname = device_data["ports"][port]
                             deviceName = device_data["name"]
                             ip = device_data["hostname"]
-                            OpticalPower.append([{"name":deviceName, "IP": ip, "port": port,"Desc":portname, "OpticalRx":optical_power}])
+                            OpticalPower.append([{"name":deviceName, "IP": ip, "port": port,"Desc":portname, "OpticalRx":optical_power, "PortStatus" :port_status} ])
+                            print(OpticalPower)
                             if optical_power:
                                 if "N/A" not in optical_power:
-                                    print(f"{Fore.GREEN}{port:<10} | {device_data['ports'][port]} | {optical_power}{Style.RESET_ALL}")
+                                    print(f"{Fore.GREEN}{port:<10} | {device_data['ports'][port]} | {port_status} | {optical_power}{Style.RESET_ALL}")
                                 else:
-                                    print(f"{Fore.RED}{port:<10} | {device_data['ports'][port]} | {optical_power}{Style.RESET_ALL}")
-                                    NoPowerPort.append([{"name":deviceName, "IP": ip, "port": port,"Desc":portname, "OpticalRx":optical_power}])
+                                    print(f"{Fore.RED}{port:<10} | {device_data['ports'][port]} | {port_status} | {optical_power}{Style.RESET_ALL}")
+                                    NoPowerPort.append([{"name":deviceName, "IP": ip, "port": port,"Desc":portname, "OpticalRx":optical_power, "PortStatus" :port_status}])
                         print("-"*55)
     if not Offline_Devices:
         print("The Offline list is empty.")
@@ -155,10 +157,10 @@ def main():
         # Write the OpticalPower details to the CSV file
         with open(optical_csv_file_path, mode='w', newline='') as csv_file:
             csv_writer = csv.writer(csv_file)
-            csv_writer.writerow(["Device Name", "IP", "Port", "Description", "Optical Rx"])  # Write the header
+            csv_writer.writerow(["Device Name", "IP", "Port" ,"PortStatus", "Description", "Optical Rx"])  # Write the header
             for device_data in OpticalPower:
                 for data in device_data:
-                    csv_writer.writerow([data["name"], data["IP"], data["port"], data["Desc"], data["OpticalRx"]])
+                    csv_writer.writerow([data["name"], data["IP"], data["port"],data["PortStatus"], data["Desc"], data["OpticalRx"]])
 
         print(f"Optical power data has been saved to {optical_csv_file_path}")
 
@@ -173,10 +175,10 @@ def main():
         # Write the OpticalPower details to the CSV file
         with open(optical_csv_file_path, mode='w', newline='') as csv_file:
             csv_writer = csv.writer(csv_file)
-            csv_writer.writerow(["Device Name", "IP", "Port", "Description", "Optical Rx"])  # Write the header
+            csv_writer.writerow(["Device Name", "IP", "Port", "PortStatus", "Description", "Optical Rx"])  # Write the header
             for device_data in NoPowerPort:
                 for data in device_data:
-                    csv_writer.writerow([data["name"], data["IP"], data["port"], data["Desc"], data["OpticalRx"]])
+                    csv_writer.writerow([data["name"], data["IP"], data["port"],data["PortStatus"], data["Desc"], data["OpticalRx"]])
 
         print(f"Optical power data has been saved to {optical_csv_file_path}")
                 

@@ -40,6 +40,36 @@ def execute_command(ssh_client, command):
     except Exception as e:
         print(f"Failed to execute command: {e}")
         return None
+def checkPortStatus(interface,ssh_client):
+    """
+    Check the status of the specified interface.
+
+    :param interface: The interface to check.
+    :return: The output of the command.
+    """
+    command = f"show interface {interface} status"
+    # ssh_client = establish_ssh_session(hostname, port, username, password)
+    if ssh_client:
+        output = execute_command(ssh_client, command)
+        # Match the part that comes after the name and before the vlan
+        # Clean the output
+        cleaned_lines = []
+        for line in output.strip().splitlines():
+            stripped = line.strip()
+            if set(stripped) == {"-"}:
+                continue  # skip delimiter lines
+            if "Port" in stripped and "Status" in stripped:
+                continue  # skip header line
+            if stripped.startswith("Error: AAA authorization failed"):
+                continue  # skip AAA error line
+            cleaned_lines.append(line)
+
+        # Output the cleaned data
+        cleaned_output = "\n".join(cleaned_lines)
+        parts = cleaned_output.split()
+        status = parts[2]
+        return status
+    return None
 
 def checkOpticalPower(interface,ssh_client):
     """

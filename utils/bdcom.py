@@ -47,3 +47,27 @@ def checkOpticalPower(interface,tn):
         return [str(rx_power)]
     else:
         return ["N/A"]
+
+def checkPortStatus(interface,tn):
+    """
+    Check the status of the specified interface.
+    :param interface: The interface to check.
+    :return: The output of the command.
+    """
+    command = f"show interface brief | include {interface}"
+    tn.write(command.encode('ascii') + b"\n")
+    output = tn.read_until(b"_config#", timeout=5).decode('ascii')
+    lines = output.strip().splitlines()
+    # Get the second line (index 1)
+    interface_line = lines[1]
+    # Split the line by whitespace
+    parts = interface_line.split()
+
+    # Extract the 3rd column (index 2)
+    status = parts[2]
+    return status
+    # match = re.search(r'(\S+)\s+(\S+)', output)
+    # if match:
+    #     return match.group(2)
+    # else:
+    #     return None
